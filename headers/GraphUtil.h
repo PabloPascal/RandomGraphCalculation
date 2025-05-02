@@ -127,7 +127,6 @@ public:
 class kGraphFactory {
 public:
 
-    static void choseVerts(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC); 
     static void choseVerts2(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC);
     static double branching(KGraph*& graph, int variant);
 

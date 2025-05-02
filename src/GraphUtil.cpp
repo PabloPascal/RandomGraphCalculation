@@ -580,34 +580,6 @@ double GraphFactory::factoring(Graph *&graph, FactoringType factoringType) {
 */
 
 
-void kGraphFactory::choseVerts(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
-    
-    if (graph->edgNumb == 0) {
-        u = 0;
-        v = 0;
-        return;
-    }
-
-    u_int vertN = graph->vertNumb;
-
-    u = vertN;
-    v = graph->FO[graph->KAO[u] - 1];
-
-    for (u_int i = 0; i < vertN; i++) {
-        
-        if (graph->isEdge(u, v)) {
-            p = graph->FORel[2*graph->edgNumb - 1];
-            return;
-        }
-        else {
-            u--;
-            v = graph->FO[graph->KAO[u]-1];
-        }
-    }
-
-}
-
-
 void kGraphFactory::choseVerts2(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
     vC = graph->vertNumb; //vertex count
 
@@ -648,13 +620,14 @@ double kGraphFactory::branching(KGraph*& graph, int variant) {
 
 
 
-    if (graph->vertNumb > 0) {
+    if (graph->vertNumb > 3) {
         if (variant == 0) {
             if (graph->Kconnective() == false) return 0;
         }
         if (TargetVertexQuality(graph) == 1) return 1;
         else {
-            graph->KParallelSeriesTransformation(p1);
+            graph = KParallelSeriesTransformation(graph, p1);
+
             if (graph->vertNumb == 2) {
                 if (graph->targets[1] == 1 && graph->targets[2] == 1 && graph->edgNumb > 0) return p1 * graph->FORel[1];
                 else return p1;
@@ -662,11 +635,11 @@ double kGraphFactory::branching(KGraph*& graph, int variant) {
             else if (graph->vertNumb < 3) return p1;
         }
 
-        //u_int v = LastNotEmptyVertice(graph);
-        //u_int u = graph->FO[graph->edgNumb * 2 - 1];
-        //double p = graph->FORel[graph->edgNumb * 2 - 1];
+        //v = LastNotEmptyVertice(graph);
+        //u = graph->FO[graph->edgNumb * 2 - 1];
+        //p = graph->FORel[graph->edgNumb * 2 - 1];
 
-        choseVerts(graph, p, u, v, uC, vC);
+        choseVerts2(graph, p, u, v, uC, vC);
 
 
         KGraph* merge = graph->MergeVertex(u, v);
@@ -685,6 +658,8 @@ double kGraphFactory::branching(KGraph*& graph, int variant) {
 }
 
 
+//count of target vertices (ENG)
+//кол-во целевых вершин (RU)
 int TargetVertexQuality(KGraph* G)
 {
     int result = 0;
@@ -696,6 +671,9 @@ int TargetVertexQuality(KGraph* G)
     return result;
 }
 
+
+//number of hanging vertices (ENG)
+//кол-во висячих вершин (RU)
 u_int LastNotEmptyVertice(KGraph* G)
 {
     int i = G->getVertNumb();

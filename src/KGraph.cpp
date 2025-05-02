@@ -276,33 +276,100 @@ namespace math {
         return polus_numb;
     }
 
-
     double KGraph::baseProbabilities() {
 
         u_int polus_numb = getPolusNumb();
 
-        double Result;
+        double Result = 0;
+
+        std::cout << "vertNumb = " << vertNumb << std::endl;
+        std::cout << "polusov = " << polus_numb << std::endl;
+        std::cout << "edges = " << edgNumb << std::endl;
 
         if (vertNumb == 1) Result = 1.0;
 
-        else if (vertNumb == 2) {
+        else if (vertNumb == 2 && edgNumb == 1) {
             std::cout << "vertNumb = 2\n";
             if (polus_numb == 1) Result = 1.0;
-            if(polus_numb == 2) Result = FORel[0];
+            if (polus_numb == 2) Result = FORel[0];
+
         }
-        
-        else{
-            std::cout << "vertNumb = 3\n";
-            if (polus_numb == 1) Result = 1.0;
-            else if (polus_numb == 2) Result = FORel[0] + FORel[0]*FORel[1] - FORel[0]*FORel[1]*FORel[2];
-            else if (polus_numb == 3) Result = FORel[0] * FORel[1] + FORel[1] * FORel[2] + FORel[0] * FORel[2] - 2 * FORel[0] * FORel[1] * FORel[2];
+
+        else if (vertNumb == 3) {
+
+            if (polus_numb == 2) {
+                if (edgNumb == 2) {
+
+                    for (u_int i = 0; i < vertNumb + 1; i++) {
+                        if (targets[i] == 1) {
+
+                            for (u_int j = 0; j < KAO[i] - KAO[i - 1]; j++) {
+
+                                if (targets[j] == 1) {
+                                    if (isEdge(i, j)) Result = FORel[KAO[i - 1] + j];
+                                    else Result = 0;
+                                    return Result;
+                                }
+
+                            }
+                        }
+                    }
+                }
+
+                if (edgNumb == 3) {
+                    double p1, p2, p3;
+                    u_int u, v, w;
+
+                    for (u_int i = 0; i < vertNumb + 1; i++) {
+                        if (targets[i] == 1) {
+                            u = i;
+                            for (u_int j = 0; j < KAO[i] - KAO[i - 1]; j++) {
+
+                                if (targets[j] == 1) {
+                                    p1 = FORel[KAO[i - 1] + j - 1];
+                                    v = j;
+                                }
+
+                            }
+                        }
+                        else {
+                            w = i;
+                        }
+                    }
+
+                    std::cout << "u = " << u << ", v = " << v << ", w = " << w << std::endl;
+
+                    p2 = FORel[FO[KAO[w - 1]]];
+                    p3 = FORel[FO[KAO[w - 1] + 1]];
+
+                    Result = p1 + p2 * p3 - p1 * p2 * p3;
+                    return Result;
+                }
+
+            }
+
+            if (polus_numb == 3) {
+                double p1, p2, p3;
+                u_int u = 1;
+                u_int v = 2;
+
+                p1 = FORel[0];
+                p2 = FORel[1];
+
+                for (u_int i = 0; i < 2 * edgNumb; i++) {
+                    if (FO[i] != u && FO[i] != v)
+                        p3 = FORel[i];
+                }
+
+                
+                Result = p1 * p2 + p2 * p3 + p1 * p3 - 2 * p1 * p2 * p3;
+            }
 
         }
 
 
         return Result;
     }
-
 
 }
 

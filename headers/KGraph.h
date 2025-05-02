@@ -12,9 +12,20 @@
 
 namespace math {
 
+
+    KGraph* KParallelSeriesTransformation(KGraph*& G, double& p);
+    KGraph* Transformation(KGraph*& G, u_int u, u_int v, u_int w, double& p);
+    u_int FindIndexEdgeForVertex(KGraph* G, u_int u, u_int v);
+
+
     class KGraph {
 
         friend class kGraphFactory;
+        friend KGraph* KParallelSeriesTransformation(KGraph*& G, double& p);
+        friend KGraph* Transformation(KGraph*& G, u_int u, u_int v, u_int w, double& p);
+        friend u_int FindIndexEdgeForVertex(KGraph* G, u_int u, u_int v);
+
+
 
         u_int* KAO;     //массив сумм степеней вершин (нумерация вершин идёт с 1). KAO[0] = 0. deg(i) = KAO[i] - KAO[i - 1], i = 1, ..., n
         u_int* FO;      //массив, где элементы от FO[KAO[i-1]] до FO[KAO[i]] - вершины, смежные с вершиной i
@@ -87,18 +98,14 @@ namespace math {
 
         int searchEdge(u_int u, u_int v);
 
-        void KParallelSeriesTransformation(double& p);
-
-        void Transformation(u_int u, u_int v, u_int w, double& p);
-
-        u_int FindIndexEdgeForVertex(u_int u, u_int v);
-
         double baseProbabilities();
 
         u_int getPolusNumb();
 
         //KGraph* MergeVertex(KGraph* G, u_int cutv1, u_int cutv2);
     };
+
+
 }
 #endif // !KGRAPH_H
 
