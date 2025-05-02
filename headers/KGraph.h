@@ -34,7 +34,7 @@ namespace math {
 
         void memallocNewGraph(u_int _vertNumb, u_int _edgNumb, u_int*& newKAO, u_int*& newFO, double*& newFORel, bool*& Targets) const;
 
-        void memupdate(u_int vertLim, u_int edgLim, u_int*& _KAO, u_int*& _FO, double*& _FORel, bool*& Targets);
+        void memupdate(u_int newVertNumb, u_int newEdgeNumb, u_int*& _KAO, u_int*& _FO, double*& _FORel, bool*& Targets);
 
         void memrebase(u_int vertLim, u_int edgLim, u_int*& _KAO, u_int*& _FO, double*& _FORel, bool*& Targets);
 
@@ -89,15 +89,9 @@ namespace math {
 
         void KParallelSeriesTransformation(double& p);
 
-        KGraph* KParallelSeriesTransformation(KGraph*& G, double& p);
-
         void Transformation(u_int u, u_int v, u_int w, double& p);
 
-        KGraph* Transformation(KGraph*& G, u_int u, u_int v, u_int w, double& p);
-
         u_int FindIndexEdgeForVertex(u_int u, u_int v);
-
-        u_int FindIndexEdgeForVertex(KGraph* G, u_int u, u_int v);
 
         double baseProbabilities();
 

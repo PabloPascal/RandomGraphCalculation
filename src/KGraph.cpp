@@ -202,21 +202,21 @@ namespace math {
         return KAO;
     }
 
-    void KGraph::memupdate(u_int vertLim, u_int edgLim, u_int*& _KAO, u_int*& _FO, double*& _FORel, bool*& Targets) {
+    void KGraph::memupdate(u_int newVertNumb, u_int newEdgeNumb, u_int*& _KAO, u_int*& _FO, double*& _FORel, bool*& Targets) {
 
-        if (vertLim > vertNumb) {
+        if (newVertNumb > vertNumb) {
             return;             //raise exception here
         }
-        if (edgLim > edgNumb) {
+        if (newEdgeNumb > edgNumb) {
             return;             //raise exception here
         }
 
-        for (u_int i = 0; i <= vertLim; i++) {
+        for (u_int i = 0; i < newVertNumb + 1; i++) {
             KAO[i] = _KAO[i];
             targets[i] = Targets[i];
         }
 
-        for (u_int i = 0; i < (2 * edgLim); i++) {
+        for (u_int i = 0; i < (2 * newEdgeNumb); i++) {
             FO[i] = _FO[i];
             FORel[i] = _FORel[i];
         }

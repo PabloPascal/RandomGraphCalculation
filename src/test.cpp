@@ -111,11 +111,8 @@ void func_test() {
     //math::KGraph* del = ptrGraph->deleteEdgeK(2, 3);
     //print_graph(merge);
     //print_graph(del);
-    math::KGraph* PST = ptrGraph->KParallelSeriesTransformation(ptrGraph, p);
     
     print_graph(ptrGraph);
-    //ptrGraph->KParallelSeriesTransformation(p);
-    print_graph(PST);
 
 
 }

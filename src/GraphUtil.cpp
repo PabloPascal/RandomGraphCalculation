@@ -636,49 +636,6 @@ void kGraphFactory::choseVerts2(KGraph*& graph, double& p, u_int& u, u_int& v, u
 }
 
 
-
-double kGraphFactory::branching(KGraph*& graph) {
-    //подсчет глубины рекурсии
-    if (graph == nullptr) return 1;
-
-    
-    u_int u, v, uC, vC;
-    double pstFactor, p, result;
-
-    //graph->KParallelSeriesTransformation(pstFactor);
-    graph = graph->KParallelSeriesTransformation(graph, pstFactor);
-
-    std::cout << "pstFactor = " << pstFactor << "\n";
-
-    std::cout <<"vertNumb = " << graph->getVertNumb() << std::endl;
-
-    choseVerts2(graph, p, u, v, uC, vC);
-
-    std::cout << "u: " << u << std::endl;
-    std::cout << "v: " << v << std::endl;
-
-    std::cout << "uC: " << uC << std::endl;
-    std::cout << "vC: " << vC << std::endl;
-
-
-    KGraph* merge = graph->MergeVertex(u, v);
-    KGraph* cut = graph->deleteEdgeK(u, v);
-    if (cut->Kconnective()) {
-        result = pstFactor*(p * branching(merge) + (1 - p) * branching(cut));
-        std::cout << "result = " << result << std::endl;
-        std::cout << "p = " << p << std::endl;
-
-    }
-    else {
-        p = 0.75;
-        result = (p * branching(merge));
-    }
-    delete merge;
-    delete cut;
-    return result;
-}
-
-
 u_int LastNotEmptyVertice(KGraph* G);
 int TargetVertexQuality(KGraph* G);
 double kGraphFactory::branching(KGraph*& graph, int variant) {
@@ -697,7 +654,7 @@ double kGraphFactory::branching(KGraph*& graph, int variant) {
         }
         if (TargetVertexQuality(graph) == 1) return 1;
         else {
-            graph = graph->KParallelSeriesTransformation(graph, p1);
+            graph->KParallelSeriesTransformation(p1);
             if (graph->vertNumb == 2) {
                 if (graph->targets[1] == 1 && graph->targets[2] == 1 && graph->edgNumb > 0) return p1 * graph->FORel[1];
                 else return p1;
@@ -747,6 +704,5 @@ u_int LastNotEmptyVertice(KGraph* G)
     }
     return i;
 }
-
 
 }//namespace math
