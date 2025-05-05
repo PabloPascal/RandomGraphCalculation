@@ -8,6 +8,8 @@
 #include <queue>
 #include <stack>
 
+#include <cstdlib>
+#include <ctime>
 
 
 namespace math {
@@ -575,9 +577,37 @@ double GraphFactory::factoring(Graph *&graph, FactoringType factoringType) {
 }
 
 
+
+
+
+
+
+
+
 /*
             K GRAPH_FACTORING
 */
+
+
+
+//=========================================== CHOOSE VERTEX ============================================
+
+
+
+
+
+u_int LastNotEmptyVertice(KGraph* G);
+int TargetVertexQuality(KGraph* G);
+
+void kGraphFactory::choseLastVerts(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
+    
+    v = LastNotEmptyVertice(graph);
+
+    u = graph->FO[graph->edgNumb * 2 - 1];
+    p = graph->FORel[graph->edgNumb * 2 - 1];
+
+}
+
 
 
 void kGraphFactory::choseVerts2(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
@@ -608,9 +638,234 @@ void kGraphFactory::choseVerts2(KGraph*& graph, double& p, u_int& u, u_int& v, u
 }
 
 
-u_int LastNotEmptyVertice(KGraph* G);
-int TargetVertexQuality(KGraph* G);
+void kGraphFactory::choseVerts3(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
+
+    u = graph->vertNumb;
+    u_int indexU = graph->KAO[u - 1];
+    u_int degU = graph->KAO[u] - graph->KAO[u - 1];
+    v = graph->FO[indexU + degU - 1];
+    uC = u;
+    vC = v;
+    p = graph->FORel[2 * graph->edgNumb - 1];
+
+
+    if (u > v) {
+        uC = u;
+        vC = v;
+        u = vC;
+        v = uC;
+    }
+
+
+}
+
+
+
+void kGraphFactory::choseVerts4(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
+
+    int min_degSum = 10000000;
+
+    int tmp_u, tmp_v;
+
+    int flag = 0;
+    int cft = 0;
+
+    //внешний цикл выбирает первую вершину
+    for (size_t i = graph->vertNumb; i > 0; i--)
+    {
+        int indexU = graph->KAO[i - 1] - 1;
+        int degU = graph->KAO[i] - graph->KAO[i - 1];
+
+        // std::cout << "i = " << i << std::endl;
+
+         //этот цикл выбирает вторую вершину
+        for (size_t j = degU; j > 0; j--) {
+            int V = graph->FO[indexU + j];
+
+            //std::cout <<"V = " << V << std::endl;
+
+            int degV = graph->KAO[V] - graph->KAO[V - 1];
+
+            if (degU + degV == 6) {
+
+                //std::cout << cft << std::endl;
+                //std::cout << "sum deg == 6\n";
+                //count_of_edges_degs_6++;
+                //ищет смежную веришну этим двум
+                for (size_t k = degU; k > 0; k--) {
+
+                    int UV = graph->FO[indexU + k];
+                    int indexUV = graph->KAO[UV - 1];
+
+                    if (UV != V)
+                    {
+                        int degUV = graph->KAO[UV] - graph->KAO[UV - 1];
+
+                        //пробегается по смежным вершинам 3й вершины
+                        for (size_t l = 0; l < degUV; l++) {
+                            if (graph->FO[indexUV + l] == V) {
+
+                                //count_of_triangles++;
+
+                                u = i;
+                                v = V;
+                                uC = u;
+                                vC = v;
+                                if (cft == 0);
+                                    //count_first_triangles++;
+
+                                 if (u > v) {
+                                     uC = u;
+                                     vC = v;
+                                     u = vC;
+                                     v = uC;
+                                 }
+
+                                 for (size_t d = 0; d < graph->KAO[u] - graph->KAO[u - 1]; d++) {
+                                     if (graph->FO[graph->KAO[v-1] + d] == u) p = graph->FORel[graph->KAO[v-1] + d];
+                                 }
+
+
+                                return;
+                            }
+                        }
+
+                    }
+
+
+                }//for k
+
+                cft++;
+
+                if (flag == 0) {
+                    tmp_u = i;
+                    tmp_v = V;
+                    flag++;
+                }
+
+            }//if deg1 + deg2 == 6
+
+            else if (min_degSum > degU + degV) {
+                min_degSum = degU + degV;
+                u = i;
+                v = V;
+                uC = u;
+                vC = v;
+
+                for (u_int k = 0; k < graph->KAO[u] - graph->KAO[u - 1]; k++) {
+                    if (graph->FO[graph->KAO[v-1] + k] == u) p = graph->FORel[graph->KAO[v-1] + k];
+                }
+
+            }
+
+        }//for j
+
+
+    }//for i 
+
+    if (flag != 0) {
+        u = tmp_u;
+        v = tmp_v;
+        uC = u;
+        vC = v;
+
+        for (u_int k = 0; k < graph->KAO[u] - graph->KAO[u - 1]; k++) {
+            if (graph->FO[graph->KAO[v-1] + k] == u) p = graph->FORel[graph->KAO[v-1] + k];
+        }
+    }
+
+
+    if (u > v) {
+        uC = u;
+        vC = v;
+        u = vC;
+        v = uC;
+    }
+
+}
+
+void kGraphFactory::choseVerts5(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
+
+    u = graph->vertNumb;
+    u_int indexU = graph->KAO[u - 1];
+    u_int degU = graph->KAO[u] - graph->KAO[u - 1];
+    v = graph->FO[indexU + degU - 1];
+    p = graph->FORel[2 * graph->edgNumb - 1];
+
+
+    degU = graph->KAO[graph->vertNumb] - graph->KAO[graph->vertNumb - 1];
+
+    u_int min_deg = 100000;
+    u_int degV;
+
+
+    for (size_t i = 2 * graph->edgNumb - 1; i > 2 * graph->edgNumb - 1 - degU; i--) {
+        degV = graph->KAO[graph->FO[i]] - graph->KAO[graph->FO[i - 1]];
+
+        if ((degU + degV < min_deg) && graph->isEdge(u, i))
+        {
+            v = i;
+
+            for (u_int k = 0; k < degU; k++) {
+                if(graph->FO[graph->KAO[v-1] + k] == u) p = graph->FORel[graph->KAO[v - 1] + k];
+            }
+
+        }
+    }
+
+    if (u > v) {
+        uC = u;
+        vC = v;
+        u = vC;
+        v = uC;
+    }
+
+
+}
+
+
+void kGraphFactory::choseRandomVerts(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC) {
+
+    std::srand(std::time(0));
+
+    u = rand() % (graph->getVertNumb() - 1) + 1;
+
+    int deg = graph->KAO[u] - graph->KAO[u - 1];
+
+    int k = (rand() % deg);
+
+    v = graph->FO[graph->KAO[u - 1] + k];
+    
+    for (u_int k = 0; k < deg; k++) {
+        if (graph->FO[graph->KAO[v - 1] + k] == u) p = graph->FORel[graph->KAO[v-1] + k];
+    }
+
+    uC = u;
+    vC = v;
+
+    if (u > v) {
+        uC = u;
+        vC = v;
+        u = vC;
+        v = uC;
+    }
+
+
+}
+
+
+
+//  ============================================FACTORIZATION===============================================================
+
+
+
+
+
+
+
 double kGraphFactory::branching(KGraph*& graph, int variant) {
+
+    if (graph == nullptr) return 1;
 
     int e = 1;
     double p1 = 1;
@@ -618,15 +873,15 @@ double kGraphFactory::branching(KGraph*& graph, int variant) {
     u_int u, v, uC, vC;
     double p;
 
-
-
     if (graph->vertNumb > 3) {
         if (variant == 0) {
             if (graph->Kconnective() == false) return 0;
         }
+
         if (TargetVertexQuality(graph) == 1) return 1;
+
         else {
-            graph = KParallelSeriesTransformation(graph, p1);
+            graph->KParallelSeriesTransformation(p1);
 
             if (graph->vertNumb == 2) {
                 if (graph->targets[1] == 1 && graph->targets[2] == 1 && graph->edgNumb > 0) return p1 * graph->FORel[1];
@@ -635,27 +890,55 @@ double kGraphFactory::branching(KGraph*& graph, int variant) {
             else if (graph->vertNumb < 3) return p1;
         }
 
-        //v = LastNotEmptyVertice(graph);
-        //u = graph->FO[graph->edgNumb * 2 - 1];
-        //p = graph->FORel[graph->edgNumb * 2 - 1];
-
+        //choseRandomVerts(graph, p, u, v, uC, vC);
         choseVerts2(graph, p, u, v, uC, vC);
 
-
         KGraph* merge = graph->MergeVertex(u, v);
-        KGraph* cut = graph->deleteEdgeK(u, v);
+        KGraph* cut = graph->deleteEdge(u, v);
 
         Rel = p1 * p * branching(merge, 1) + p1 * (1 - p) * branching(cut, 0);
+
         delete merge;
         delete cut;
+
     }
     else {
-        std::cout << "base prob\n";
         Rel = graph->baseProbabilities();
     }
 
     return Rel;
+
 }
+
+
+void kGraphFactory::branchingWithNoReverse(KGraph*& graph, double& rel, double prob) {
+
+
+    u_int u, v, uC, vC;
+    double pstFactor, p;
+
+    graph->KParallelSeriesTransformation(pstFactor);
+
+    if (graph->getVertNumb() > 3) {
+        choseLastVerts(graph, p, u, v, uC, vC);
+        KGraph* merge = graph->MergeVertex(u, v);
+        KGraph* cut = graph->deleteEdge(u, v);
+        if (cut->Kconnective()) {
+            branchingWithNoReverse(cut, rel, pstFactor * (1 - p) * prob);
+        }
+        branchingWithNoReverse(merge, rel, pstFactor * p * prob);
+        delete merge;
+        delete cut;
+    }
+    else {
+        rel += pstFactor * prob * graph->baseProbabilities();
+        //std::cout << "rel = " << rel << std::endl;
+        return;
+
+    }
+}
+
+
 
 
 //count of target vertices (ENG)
@@ -672,8 +955,8 @@ int TargetVertexQuality(KGraph* G)
 }
 
 
-//number of hanging vertices (ENG)
-//кол-во висячих вершин (RU)
+//last not hanging vertex (ENG)
+//последняя не висячая вершина (RU)
 u_int LastNotEmptyVertice(KGraph* G)
 {
     int i = G->getVertNumb();
@@ -682,5 +965,9 @@ u_int LastNotEmptyVertice(KGraph* G)
     }
     return i;
 }
+
+
+
+
 
 }//namespace math

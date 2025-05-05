@@ -9,17 +9,21 @@ namespace math {
         if (this == nullptr) {
             return false;
         }
-
+        if (vertNumb == 1) return 1;
 
         int sum = 1,sum1 = 0, l = 1, LB;
-        std::vector<int> A, B, Spot;
+//        std::vector<int> A, B, Spot;
+
+        u_int* A = new u_int[vertNumb + 1];
+        u_int* B = new u_int[vertNumb + 1];
+        u_int* Spot = new u_int[vertNumb + 1];
 
         bool Result;
 
         sum = 1;
-        A.resize(vertNumb + 1);
-        Spot.resize(vertNumb + 1);
-        B.resize(vertNumb + 1);
+        /*A.resize(vertNumb + 1);
+        Spot.reserve(vertNumb + 1);
+        B.resize(vertNumb + 1);*/
 
         for (int i = 1; i < vertNumb + 1; i++) {
             if (targets[i] == 1) {
@@ -28,7 +32,6 @@ namespace math {
             }
 
         }
-
 
         for (int i = 1; i < vertNumb + 1; i++) {
             Spot[i] = 0;
@@ -73,29 +76,34 @@ namespace math {
             if (vertNumb == 1) Result = true;
         }
 
+        delete[] A;
+        delete[] B;
+        delete[] Spot;
 
         return Result;
     }//KConnective()
     
 
-    KGraph* KGraph::deleteEdgeK(u_int u, u_int v) {
+    KGraph* KGraph::deleteEdge(u_int u, u_int v) {
+
+        if ((u == 0) || (u > edgNumb) || (v == 0) || (v > edgNumb) || (!isEdge(u, v))) {
+            return nullptr;     //raise exception here
+        }
+
 
         //std::cout << "delete Edge\n";
 
-        if (u == v) return nullptr; 
-
-        //if ((u == 0) || (u > edgNumb) || (v == 0) || (v > edgNumb) || (!isEdge(u, v))) {
-        //    return nullptr;     //raise exception here
-        //}
 
         u_int newVertNumb = vertNumb;
         u_int newEdgNumb = edgNumb - 1;
-        u_int* newKAO;
-        u_int* newFO;
-        double* newFORel;
-        bool* Targets;
-
-        memallocNewGraph(newVertNumb, newEdgNumb, newKAO, newFO, newFORel, Targets);
+        u_int* newKAO = new u_int[newVertNumb+1];
+        u_int* newFO = new u_int[2*newEdgNumb];
+        double* newFORel = new double[2*newEdgNumb];        
+        //bool* Targets = new bool[newVertNumb];
+        bool* Targets = targets;
+        /*for (size_t i = 0; i < newVertNumb; i++) {
+            Targets[i] = targets[i];
+        }*/
 
         newKAO[0] = 0;
         u_int iC = 1;
@@ -126,7 +134,8 @@ namespace math {
             iC++;
         }
 
-        KGraph* result = new KGraph(newVertNumb, newEdgNumb, newKAO, newFO, targets, newFORel);
+        KGraph* result = new KGraph(newVertNumb, newEdgNumb, newKAO, newFO, Targets, newFORel);
+
         return result;
     }
 
@@ -180,19 +189,20 @@ namespace math {
     //NV - numb vert, NE - numb edge
 
     KGraph* KGraph::MergeVertex(u_int u, u_int v) {
-
-        //if (this == nullptr) return nullptr;
+        
+        if ((u == 0) || (u > edgNumb) || (v == 0) || (v > edgNumb) || (!isEdge(u, v))) {
+            return nullptr;     //raise exception here
+        }
 
         //std::cout << "merge\n";
 
         u_int newVertNumb = vertNumb - 1;
         u_int newEdgNumb = edgNumb - 1;
-        u_int* newKAO;
-        u_int* newFO;
-        double* newFORel;
-        bool* Targets;
+        u_int* newKAO = new u_int[newVertNumb + 1];
+        u_int* newFO = new u_int[2 * newEdgNumb];
+        double* newFORel = new double[2 * newEdgNumb];
+        bool* Targets = new bool[newVertNumb + 1];
 
-        
         u_int newVert;      //номер вершины, в которую осуществляется стягивание (выбирается наименьшая по номеру из пары (u, v))
         u_int delVert;      //номер вершины, которая будет удалена из графа
 
@@ -216,8 +226,6 @@ namespace math {
                 newEdgNumb--;
             }
         }
-
-        memallocNewGraph(newVertNumb, newEdgNumb, newKAO, newFO, newFORel, Targets);
 
         newKAO[0] = 0;
         u_int iC = 1;
@@ -328,7 +336,8 @@ namespace math {
             Targets[i - 1] = targets[i];
         }
         if (targets[u] == 1 || targets[v] == 1) Targets[u] = 1;
-        KGraph* result = new KGraph(newVertNumb, newEdgNumb, newKAO, newFO,Targets, newFORel);
+
+        KGraph* result = new KGraph(newVertNumb, newEdgNumb, newKAO, newFO, Targets, newFORel);
         return result;
     }
 
@@ -352,7 +361,7 @@ namespace math {
 
 
 
-    KGraph* KParallelSeriesTransformation(KGraph*& G, double& p)
+    void KGraph::KParallelSeriesTransformation(double& p)
     {
         bool b = false;
         u_int  u = 0, v = 0, w, e1, e2;
@@ -360,156 +369,174 @@ namespace math {
         p = 1;
 
         u_int i;
-        for (i = 1; i < G->vertNumb + 1; i++) {
-            if ((G->KAO[i] - G->KAO[i - 1] == 2) && ((G->targets[i] == 0) ||
-                ((G->targets[i] == 1) && (G->targets[G->FO[G->KAO[i - 1]]] == 1) &&
-                    (G->targets[G->FO[G->KAO[i] - 1]] == 1)))) {
+        for (i = 1; i < vertNumb + 1; i++) {
+            if ((KAO[i] - KAO[i - 1] == 2) && ((targets[i] == 0) ||
+                ((targets[i] == 1) && (targets[FO[KAO[i - 1]]] == 1) &&
+                    (targets[FO[KAO[i] - 1]] == 1)))) {
                 b = true;
                 v = i;
-                u = G->FO[G->KAO[i - 1]];
-                w = G->FO[G->KAO[i] - 1];
-                p1 = G->FORel[G->KAO[i - 1]];
-                p2 = G->FORel[G->KAO[i] - 1];
+                u = FO[KAO[i - 1]];
+                w = FO[KAO[i] - 1];
+                p1 = FORel[KAO[i - 1]];
+                p2 = FORel[KAO[i] - 1];
                 break;
             }
         }
 
         while (b) {
-            if (G->targets[i] == 1) {
+            if (targets[i] == 1) {
                 p *= (p1 + p2 - p1 * p2);
                 p3 = p1 * p2 / (p1 + p2 - p1 * p2); //rc
             }
             else p3 = p1 * p2;
-            G = Transformation(G, u, v, w, p3);
+            Transformation(u, v, w, p3);
             b = false;
-            for (i = 1; i < G->vertNumb + 1; i++) {
-                if (G->KAO[i] - G->KAO[i - 1] == 2 && ((G->targets[i] == 0) ||
-                    ((G->targets[i] == 1) && (G->targets[G->FO[G->KAO[i - 1]]] == 1) &&
-                        (G->targets[G->FO[G->KAO[i] - 1]] == 1)))) {
+            for (i = 1; i < vertNumb + 1; i++) {
+                if (KAO[i] - KAO[i - 1] == 2 && ((targets[i] == 0) ||
+                    ((targets[i] == 1) && (targets[FO[KAO[i - 1]]] == 1) &&
+                        (targets[FO[KAO[i] - 1]] == 1)))) {
                     b = true;
                     v = i;
-                    u = G->FO[G->KAO[i - 1]];
-                    w = G->FO[G->KAO[i] - 1];
-                    p1 = G->FORel[G->KAO[i - 1]];
-                    p2 = G->FORel[G->KAO[i] - 1];
+                    u = FO[KAO[i - 1]];
+                    w = FO[KAO[i] - 1];
+                    p1 = FORel[KAO[i - 1]];
+                    p2 = FORel[KAO[i] - 1];
                     break;
                 }
             }
         }
-        return G;
     }
 
 
 
 
-    KGraph* Transformation(KGraph*& G, u_int u, u_int v, u_int w, double& p)
+    void KGraph::Transformation(u_int u, u_int v, u_int w, double& p)
     {
         int l = 0;
 
-        std::vector<u_int> Numbers;
-        Numbers.resize(G->vertNumb + 1);
+        //std::vector<u_int> Numbers;
+        u_int* Numbers = new u_int[vertNumb + 1];
+        
+        //Numbers.resize(vertNumb + 1);
 
-        KGraph* Result = new KGraph(G->vertNumb - 1, G->edgNumb);
+        //KGraph* Result = new KGraph(vertNumb - 1, edgNumb);
 
-        Result->targets[0] = 0;
+        u_int newVertNumb = vertNumb - 1;
+        u_int newEdgNumb = edgNumb;
+
+        u_int* newKAO = new u_int[newVertNumb + 1];
+        bool* Targets = new bool[newVertNumb + 1];
+        u_int* newFO;
+        double* newFORel;
+        
+
+        Targets[0] = 0;
         for (u_int i{ 1 }; i < v; i++) {
-            Result->targets[i] = G->targets[i];
+            Targets[i] = targets[i];
         }
-        for (u_int i{ v }; i < Result->vertNumb + 1; i++) {
-            Result->targets[i] = G->targets[i + 1];
+        for (u_int i{ v }; i < newVertNumb + 1; i++) {
+            Targets[i] = targets[i + 1];
         }
 
-        Result->KAO[0] = 0;
+        newKAO[0] = 0;
         for (u_int i{ 1 }; i < v; i++) {
             Numbers[i] = i;
         }
         Numbers[v] = 0;
-        for (u_int i{ v + 1 }; i < G->vertNumb + 1; i++) {
+        for (u_int i{ v + 1 }; i < vertNumb + 1; i++) {
             Numbers[i] = i - 1;
         }
 
-        int SE = FindIndexEdgeForVertex(G, u, w);
+        int SE = FindIndexEdgeForVertex(this, u, w);
         bool bol = true;
-        if (SE < G->edgNumb * 2) {
-            p = 1 - (1 - G->FORel[SE]) * (1 - p);
-            Result->edgNumb = G->edgNumb - 2;
-            for (u_int i{ 1 }; i < G->vertNumb + 1; i++) {
+        if (SE < edgNumb * 2) {
+            p = 1 - (1 - FORel[SE]) * (1 - p);
+
+            newEdgNumb = edgNumb - 2;
+            
+            newFO = new u_int[2 * newEdgNumb];
+            newFORel = new double[2 * newEdgNumb];
+
+            for (u_int i{ 1 }; i < vertNumb + 1; i++) {
                 if (i == u || i == w) {
-                    Result->KAO[Numbers[i]] = Result->KAO[Numbers[i] - 1];
-                    for (u_int j{ G->KAO[i - 1] }; j < G->KAO[i]; j++) {
-                        if (G->FO[j] == w || G->FO[j] == u) {
-                            Result->FO[l] = Numbers[G->FO[j]];
-                            Result->FORel[l] = p;
-                            Result->KAO[Numbers[i]]++;
+                    newKAO[Numbers[i]] = newKAO[Numbers[i] - 1];
+                    for (u_int j{ KAO[i - 1] }; j < KAO[i]; j++) {
+                        if (FO[j] == w || FO[j] == u) {
+                            newFO[l] = Numbers[FO[j]];
+                            newFORel[l] = p;
+                            newKAO[Numbers[i]]++;
                             l++;
                         }
-                        else if (G->FO[j] != v) {
-                            Result->FO[l] = Numbers[G->FO[j]];
-                            Result->FORel[l] = G->FORel[j];;
-                            Result->KAO[Numbers[i]]++;
+                        else if (FO[j] != v) {
+                            newFO[l] = Numbers[FO[j]];
+                            newFORel[l] = FORel[j];;
+                            newKAO[Numbers[i]]++;
                             l++;
                         }
                     }
                 }
                 else if (i != v) {
-                    Result->KAO[Numbers[i]] = Result->KAO[Numbers[i] - 1];
-                    for (u_int j{ G->KAO[i - 1] }; j < G->KAO[i]; j++) {
-                        Result->FO[l] = Numbers[G->FO[j]];
-                        Result->FORel[l] = G->FORel[j];;
-                        Result->KAO[Numbers[i]]++;
+                    newKAO[Numbers[i]] = newKAO[Numbers[i] - 1];
+                    for (u_int j{ KAO[i - 1] }; j < KAO[i]; j++) {
+                        newFO[l] = Numbers[FO[j]];
+                        newFORel[l] = FORel[j];;
+                        newKAO[Numbers[i]]++;
                         l++;
                     }
                 }
             }
         }
         else {
-            Result->edgNumb = G->edgNumb - 1;
-            for (int i{ 1 }; i < G->vertNumb + 1; i++) {
+            newEdgNumb = edgNumb - 1;
+            newFO = new u_int[2 * newEdgNumb];
+            newFORel = new double[2 * newEdgNumb];
+
+            for (u_int i{ 1 }; i < vertNumb + 1; i++) {
                 if (i == u) {
-                    Result->KAO[Numbers[i]] = Result->KAO[Numbers[i] - 1];
-                    Result->FO[l] = Numbers[w];
-                    Result->FORel[l] = p;
-                    Result->KAO[Numbers[i]]++;
+                    newKAO[Numbers[i]] = newKAO[Numbers[i] - 1];
+                    newFO[l] = Numbers[w];
+                    newFORel[l] = p;
+                    newKAO[Numbers[i]]++;
                     l++;
-                    for (u_int j{ G->KAO[i - 1] }; j < G->KAO[i]; j++) { //bpv
-                        if (G->FO[j] != v) {
-                            Result->FO[l] = Numbers[G->FO[j]];
-                            Result->FORel[l] = G->FORel[j];
-                            Result->KAO[Numbers[i]]++;
+                    for (u_int j{ KAO[i - 1] }; j < KAO[i]; j++) { //bpv
+                        if (FO[j] != v) {
+                            newFO[l] = Numbers[FO[j]];
+                            newFORel[l] = FORel[j];
+                            newKAO[Numbers[i]]++;
                             l++;
                         }
                     }
                 }
                 else if (i == w) {
-                    Result->KAO[Numbers[i]] = Result->KAO[Numbers[i] - 1];
-                    Result->FO[l] = Numbers[u];
-                    Result->FORel[l] = p;
-                    Result->KAO[Numbers[i]]++;
+                    newKAO[Numbers[i]] = newKAO[Numbers[i] - 1];
+                    newFO[l] = Numbers[u];
+                    newFORel[l] = p;
+                    newKAO[Numbers[i]]++;
                     l++;
-                    for (u_int j{ G->KAO[i - 1] }; j < G->KAO[i]; j++) {//bpv
-                        if (G->FO[j] != v) {
-                            Result->FO[l] = Numbers[G->FO[j]];
-                            Result->FORel[l] = G->FORel[j];
-                            Result->KAO[Numbers[i]]++;
+                    for (u_int j{ KAO[i - 1] }; j < KAO[i]; j++) {//bpv
+                        if (FO[j] != v) {
+                            newFO[l] = Numbers[FO[j]];
+                            newFORel[l] = FORel[j];
+                            newKAO[Numbers[i]]++;
                             l++;
                         }
                     }
                 }
                 else if (i != v) {
-                    Result->KAO[Numbers[i]] = Result->KAO[Numbers[i] - 1];
-                    for (u_int j{ G->KAO[i - 1] }; j < G->KAO[i]; j++) {
-                        Result->FO[l] = Numbers[G->FO[j]];
-                        Result->FORel[l] = G->FORel[j];
-                        Result->KAO[Numbers[i]]++;
+                    std::cout << "here";
+                    newKAO[Numbers[i]] = newKAO[Numbers[i] - 1];
+                    for (u_int j{ KAO[i - 1] }; j < KAO[i]; j++) {
+                        newFO[l] = Numbers[FO[j]];
+                        newFORel[l] = FORel[j];
+                        newKAO[Numbers[i]]++;
                         l++;
                     }
                 }
             }
         }
-        //Result.VertexCount = kaoLength-1;
-        //Result.EdgeCount = foLength / 2;
-        //std::cout <<" Transform p = " << p << std::endl;
-        return Result;
+        
+        memrebase(newVertNumb, newEdgNumb, newKAO, newFO, newFORel, Targets);
+        
     }
 
 
@@ -525,7 +552,8 @@ namespace math {
     }
 
 
-}
+
+}//math
 
 
 

@@ -126,9 +126,26 @@ public:
 
 class kGraphFactory {
 public:
+    
+    //последний с конца
+    static void choseLastVerts(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC);
+    static void choseVerts3(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC); //этот тоже  (too)
 
-    static void choseVerts2(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC);
+
+    //базовый метод (выбор ребра, сумма степ инц верш меньше 7 или мин степенью)
+    static void choseVerts2(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC);   
+
+
+    static void choseVerts4(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC);
+    static void choseVerts5(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC);
+    
+    static void choseRandomVerts(KGraph*& graph, double& p, u_int& u, u_int& v, u_int& uC, u_int& vC);
+
+
+    //факторизация (factoring)
     static double branching(KGraph*& graph, int variant);
+
+    static void branchingWithNoReverse(KGraph*& graph, double& rel, double prob);
 
 };//kGraphFactory
 

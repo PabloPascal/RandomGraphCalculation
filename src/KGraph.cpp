@@ -5,10 +5,11 @@
 namespace math {
 
     void KGraph::memclear() {
+
         delete[] FO;
         delete[] KAO;
         delete[] FORel;
-        delete[] targets;
+        //delete[] targets;
 
         KAO = nullptr;
         FO = nullptr;
@@ -121,25 +122,39 @@ namespace math {
 
     }
 
-
     void KGraph::memcopy(const KGraph& kGraph) {
+
+        if (kGraph.KAO == nullptr || kGraph.FO == nullptr || kGraph.FORel == nullptr || kGraph.targets == nullptr) {
+            std::cout << "memcopy: kGraph == nullptr\n";
+            return;
+        }
+
         vertNumb = kGraph.vertNumb;
         edgNumb = kGraph.edgNumb;
 
         KAO = new u_int[vertNumb + 1];
-        FO = new u_int[2 * edgNumb];
-        FORel = new double[2 * edgNumb];
-        targets = new bool[vertNumb];
+        targets = new bool[vertNumb + 1];
 
-        for (u_int i = 0; i <= vertNumb; i++) {
+
+        if (edgNumb > 0) {
+            FO = new u_int[2 * edgNumb];
+            FORel = new double[2 * edgNumb];
+        }
+        else {
+            std::cout << "memcopy: edgNumb = 0\n";
+            FO = nullptr;
+            FORel = nullptr;
+        }
+
+        for (u_int i = 0; i < vertNumb + 1; i++) {
             KAO[i] = kGraph.KAO[i];
         }
         for (u_int i = 0; i < (2 * edgNumb); i++) {
             FO[i] = kGraph.FO[i];
             FORel[i] = kGraph.FORel[i];
         }
-
-        for (u_int i = 0; i < vertNumb; i++) {
+        targets[0] = 0;
+        for (u_int i = 0; i < vertNumb + 1; i++) {
             targets[i] = kGraph.targets[i];
         }
 
@@ -278,18 +293,15 @@ namespace math {
 
     double KGraph::baseProbabilities() {
 
+        
         u_int polus_numb = getPolusNumb();
 
         double Result = 0;
 
-        std::cout << "vertNumb = " << vertNumb << std::endl;
-        std::cout << "polusov = " << polus_numb << std::endl;
-        std::cout << "edges = " << edgNumb << std::endl;
-
+       
         if (vertNumb == 1) Result = 1.0;
 
         else if (vertNumb == 2 && edgNumb == 1) {
-            std::cout << "vertNumb = 2\n";
             if (polus_numb == 1) Result = 1.0;
             if (polus_numb == 2) Result = FORel[0];
 
@@ -337,12 +349,12 @@ namespace math {
                         }
                     }
 
-                    std::cout << "u = " << u << ", v = " << v << ", w = " << w << std::endl;
 
                     p2 = FORel[FO[KAO[w - 1]]];
                     p3 = FORel[FO[KAO[w - 1] + 1]];
 
                     Result = p1 + p2 * p3 - p1 * p2 * p3;
+                    
                     return Result;
                 }
 
@@ -361,7 +373,6 @@ namespace math {
                         p3 = FORel[i];
                 }
 
-                
                 Result = p1 * p2 + p2 * p3 + p1 * p3 - 2 * p1 * p2 * p3;
             }
 
@@ -370,6 +381,7 @@ namespace math {
 
         return Result;
     }
+
 
 }
 

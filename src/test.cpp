@@ -14,7 +14,7 @@ void print_graph(math::Graph* ptrGraph);
 
 void test1() {
 
-    std::ifstream input("kGraphFiles/triangle.txt");       //лучше указать абсолютный путь
+    std::ifstream input("../GraphFiles/grid55.txt");       //лучше указать абсолютный путь
 
     if (!input.is_open()) {
         std::cout << "DIDNT OPEN! \n";
@@ -25,8 +25,8 @@ void test1() {
     input >> graph;
 
 
-    //math::Graph *graphPtr = math::GraphGenerator::generateCompleteGraph(12);
-    math::Graph* graphPtr = &graph;
+    math::Graph *graphPtr = math::GraphGenerator::generateCompleteGraph(12);
+    //math::Graph* graphPtr = &graph;
 
     print_graph(graphPtr);
 
@@ -56,8 +56,9 @@ void test2() {
     std::string path = "../kGraphFiles/";
 
     //std::ifstream input(path + "kgraph_test2.txt");
-    std::ifstream input(path + "/k_grid33.txt");
+    //std::ifstream input(path + "/k_grid33.txt");
     //std::ifstream input(path + "/kgraph_test.txt");
+    std::ifstream input(path + "/complete_graph11.txt");
     //std::ifstream input(path + "/triangle.txt");
     if(!input.is_open()){
         std::cout << "can't open the file!" << std::endl;
@@ -76,19 +77,24 @@ void test2() {
     auto begin = std::chrono::steady_clock::now();
 
     //double rel = math::kGraphFactory::branching(ptrGraph);
-    double rel = math::kGraphFactory::branching(ptrGraph,0);
+    double rel = 0;
+    math::kGraphFactory::branchingWithNoReverse(ptrGraph,rel, 1);
+    //rel = math::kGraphFactory::branching(ptrGraph, 0);
 
     auto end = std::chrono::steady_clock::now();
 
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::cout << "The time: " << elapsed_ms.count() << " ms\n";
     std::cout << "\nRel = " << rel << std::endl;
 
 }
 
 
 void func_test() {
+    std::string path = "../kGraphFiles/";
 
-    //std::ifstream input("src/complete_graph4.txt");
-    std::ifstream input("src/k_grid33.txt");
+    std::ifstream input(path + "/complete_graph4.txt");
+    //std::ifstream input(path + "src/k_grid33.txt");
     //std::ifstream input("src/test2.txt");
     if (!input.is_open()) {
         std::cout << "can't open the file!" << std::endl;
@@ -105,6 +111,7 @@ void func_test() {
     u_int u, v, uC, vC;
     double pstFactor, p, result;
     
+    //delete ptrGraph;
     //math::kGraphFactory::choseVerts2(ptrGraph, p, u, v, uC, vC);
     
     //math::KGraph* merge = ptrGraph->MergeVertex(2, 3);
@@ -112,7 +119,7 @@ void func_test() {
     //print_graph(merge);
     //print_graph(del);
     
-    print_graph(ptrGraph);
+    //print_graph(ptrGraph);
 
 
 }

@@ -13,18 +13,13 @@
 namespace math {
 
 
-    KGraph* KParallelSeriesTransformation(KGraph*& G, double& p);
-    KGraph* Transformation(KGraph*& G, u_int u, u_int v, u_int w, double& p);
     u_int FindIndexEdgeForVertex(KGraph* G, u_int u, u_int v);
 
 
     class KGraph {
 
         friend class kGraphFactory;
-        friend KGraph* KParallelSeriesTransformation(KGraph*& G, double& p);
-        friend KGraph* Transformation(KGraph*& G, u_int u, u_int v, u_int w, double& p);
         friend u_int FindIndexEdgeForVertex(KGraph* G, u_int u, u_int v);
-
 
 
         u_int* KAO;     //массив сумм степеней вершин (нумерация вершин идёт с 1). KAO[0] = 0. deg(i) = KAO[i] - KAO[i - 1], i = 1, ..., n
@@ -55,7 +50,7 @@ namespace math {
 
         KGraph(const KGraph& kGraph);
 
-        KGraph(u_int _vertNumb, u_int _edgNumb, u_int*& _KAO, u_int*& _FO, bool*& targets, double*& _FORel);
+        KGraph(u_int _vertNumb, u_int _edgNumb, u_int*& _KAO, u_int*& _FO, bool*& _targets, double*& _FORel);
 
         KGraph(u_int _vertNumb, u_int _edgNumb);
 
@@ -75,6 +70,7 @@ namespace math {
 
         KGraph& operator=(const KGraph* kGraph);
 
+        
         //support func
         u_int getVertNumb();
         u_int getEdgeNumb();
@@ -94,9 +90,13 @@ namespace math {
 
         bool isEdgeWithPos(u_int u, u_int v, u_int& pos) const;
 
-        KGraph* deleteEdgeK(u_int u, u_int v);
+        KGraph* deleteEdge(u_int u, u_int v);
 
         int searchEdge(u_int u, u_int v);
+
+        void KParallelSeriesTransformation(double& p);
+        void Transformation(u_int u, u_int v, u_int w, double& p);
+
 
         double baseProbabilities();
 
